@@ -3,7 +3,7 @@ import * as inquirer from 'inquirer';
 
 import { addRemote, applyUpdate, Commit, getUpdates, removeRemote } from './git';
 
-(async function main(remoteUrl?: string): Promise<number> {
+(async function main(remoteUrl?: string, ignoreAllSpace?: boolean): Promise<number> {
 	const remoteName = "upstream-template";
 	if (!remoteUrl) {
 		console.error("Please provide an upstream-url");
@@ -26,7 +26,7 @@ import { addRemote, applyUpdate, Commit, getUpdates, removeRemote } from './git'
 			});
 			const updateSet = selection.sort((commitA, commitB) => commitA.timestamp - commitB.timestamp);
 			for (const update of updateSet) {
-				await applyUpdate(update);
+				await applyUpdate(update, !ignoreAllSpace ? false : true);
 			}
 		} else {
 			console.log(`There are no new updates from upstream template repository`);

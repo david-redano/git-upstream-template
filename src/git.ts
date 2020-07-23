@@ -98,7 +98,7 @@ export async function successful(fn: () => any) {
 	}
 }
 
-export async function applyUpdate(commit: Commit) {
+export async function applyUpdate(commit: Commit, ignoreAllSpace: boolean) {
 	const commitMessage = generateUpdateCommitMessage(commit);
 
 	console.log(chalk.default.yellow`Stashing your current working directory before applying updates...`);
@@ -112,7 +112,12 @@ export async function applyUpdate(commit: Commit) {
 		await successful(() => run(`yarn upgrade ${update.package}@${update.version}`, { verbose: true }));
 		await successful(() => git(`add -u`, { verbose: true }));
 	} else {
-		await successful(() => git(`cherry-pick -X ignore-all-space ${commit.hash} --no-commit`));
+		if(ignoreAllSpace) {
+			
+			await successful(() => git(`cherry-pick -X ignore-all-space ${commit.hash} --no-commit`));
+		} else {
+			await successful(() => git(`cherry-pick ${commit.hash} --no-commit`));
+		}
 	}
 
 	async function successfullyCommits() {
