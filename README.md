@@ -10,3 +10,5 @@ on an child instance of a Github template repository will open up an interactive
 All working directory changes will be stashed before any operations are made using git and popped once successfully completed. This is for your own peace-of-mind and protection. If any operation fails, simply use `git stash pop` to retrieve your cwd again.
 
 Special treatment will be given to source commits with messages formatted: `Bump <package> from <src_version> to <dst_version>`. These commits will call `yarn` to update `<package>` to version `<dst_version>`.
+
+This fork is aimed to add some parameters to the tool execution.
