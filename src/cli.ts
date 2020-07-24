@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import * as inquirer from 'inquirer';
+import * as chalk from 'chalk';
 
 import { addRemote, applyUpdate, Commit, getUpdates, removeRemote } from './git';
 
@@ -13,6 +14,7 @@ import { addRemote, applyUpdate, Commit, getUpdates, removeRemote } from './git'
 	if (await addRemote(remoteName, remoteUrl)) {
 		const updates = await getUpdates(`${remoteName}/master`);
 		if (updates.length) {
+			console.log(chalk.default.yellow(`Nr of revisions to merge: ` + chalk.default.bold(updates.length.toString()))); 
 			const { selection } = await inquirer.prompt<{ selection: Commit[] }>({
 				choices: [
 					new inquirer.Separator(),
@@ -22,7 +24,8 @@ import { addRemote, applyUpdate, Commit, getUpdates, removeRemote } from './git'
 					}))
 				],
 				name: "selection",
-				type: "checkbox"
+				type: "checkbox",
+				pageSize: 25
 			});
 			const updateSet = selection.sort((commitA, commitB) => commitA.timestamp - commitB.timestamp);
 			for (const update of updateSet) {

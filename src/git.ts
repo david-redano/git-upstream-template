@@ -100,6 +100,8 @@ export async function successful(fn: () => any) {
 
 export async function applyUpdate(commit: Commit, ignoreAllSpace: boolean) {
 	const commitMessage = generateUpdateCommitMessage(commit);
+	console.log(
+		chalk.default.cyanBright(`Applying update for template commit: ` + chalk.default.bold(commit.message)));
 
 	console.log(chalk.default.yellow`Stashing your current working directory before applying updates...`);
 	const stashed = !(await git(`stash save Before applying upstream-template update ${commit.hash}`, {
@@ -112,12 +114,9 @@ export async function applyUpdate(commit: Commit, ignoreAllSpace: boolean) {
 		await successful(() => run(`yarn upgrade ${update.package}@${update.version}`, { verbose: true }));
 		await successful(() => git(`add -u`, { verbose: true }));
 	} else {
-		if(ignoreAllSpace) {
-			
-			await successful(() => git(`cherry-pick -X ignore-all-space ${commit.hash} --no-commit`));
-		} else {
-			await successful(() => git(`cherry-pick ${commit.hash} --no-commit`));
-		}
+		const command = `cherry-pick ${!ignoreAllSpace ? `` : `-X ignore-all-space`} ${commit.hash} --no-commit`;
+		console.log(`${ignoreAllSpace?`(ignoring spaces)`:``}` + chalk.default.green` Running cherry-pick command: ` + command);
+		await successful(() => git(command));
 	}
 
 	async function successfullyCommits() {
