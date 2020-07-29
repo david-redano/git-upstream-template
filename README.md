@@ -11,4 +11,4 @@ All working directory changes will be stashed before any operations are made usi
 
 Special treatment will be given to source commits with messages formatted: `Bump <package> from <src_version> to <dst_version>`. These commits will call `yarn` to update `<package>` to version `<dst_version>`.
 
-This fork is aimed to add some parameters to the tool execution.
+This fork is aimed to add some parameters to the tool execution and accomodating the tool to the SAGE Template Update process.
