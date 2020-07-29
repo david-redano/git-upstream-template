@@ -39,6 +39,7 @@ import { addRemote, applyUpdate, Commit, getUpdates, removeRemote, getDate } fro
 			for (const update of updateSet) {
 				await applyUpdate(update, !ignoreAllSpace ? false : true);
 			}
+			console.log(`### Template Update Process finished ###`);
 		} else {
 			console.log(`There are no new updates from upstream template repository`);
 		}
