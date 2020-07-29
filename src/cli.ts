@@ -2,7 +2,7 @@
 import * as inquirer from 'inquirer';
 import * as chalk from 'chalk';
 
-import { addRemote, applyUpdate, Commit, getUpdates, removeRemote } from './git';
+import { addRemote, applyUpdate, Commit, getUpdates, removeRemote, getDate } from './git';
 
 (async function main(remoteUrl?: string, ignoreAllSpace?: boolean): Promise<number> {
 	const remoteName = "upstream-template";
@@ -14,8 +14,9 @@ import { addRemote, applyUpdate, Commit, getUpdates, removeRemote } from './git'
 	if (await addRemote(remoteName, remoteUrl)) {
 		const updates = await getUpdates(`${remoteName}/master`);
 		if (updates.length) {
-			console.log(chalk.default.yellow(`Nr of revisions to merge: ` + chalk.default.bold(updates.length.toString()))); 
-			const { selection } = await inquirer.prompt<{ selection: Commit[] }>({
+			// console.log(chalk.default.yellow(`Nr of revisions to merge: ` + chalk.default.bold(updates.length.toString()))); 
+			
+/* 			const { selection } = await inquirer.prompt<{ selection: Commit[] }>({
 				choices: [
 					new inquirer.Separator(),
 					...updates.map(commit => ({
@@ -27,7 +28,14 @@ import { addRemote, applyUpdate, Commit, getUpdates, removeRemote } from './git'
 				type: "checkbox",
 				pageSize: 25
 			});
-			const updateSet = selection.sort((commitA, commitB) => commitA.timestamp - commitB.timestamp);
+ */
+			const updateSet = updates.sort((commitA, commitB) => commitA.timestamp - commitB.timestamp);
+			console.log(chalk.default.bgCyan(`(from oldest to newest) List of revisions to merge (` + chalk.default.bold(updates.length.toString())+ `)`));
+			for (const update of updateSet) {
+				let d = getDate(update.timestamp);
+				console.log(chalk.default.magenta(d.toLocaleDateString() + " # " + update.message));
+			}
+			
 			for (const update of updateSet) {
 				await applyUpdate(update, !ignoreAllSpace ? false : true);
 			}

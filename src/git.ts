@@ -67,6 +67,10 @@ export async function getCurrentBranchName() {
 	return (branchOutput.match(/\*\s(\S+)/) as any)[1];
 }
 
+export function getDate(unixtime: number): Date {
+	return new Date(unixtime*1000);
+}
+
 export async function getUpdates(updateBranch: string) {
 	const currentBranch = await getCurrentBranchName();
 	const currentHashes = (await git(`log ${currentBranch} --format=%h`)).trim().split("\n");
