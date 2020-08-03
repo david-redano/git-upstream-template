@@ -14,26 +14,11 @@ import { addRemote, applyUpdate, Commit, getUpdates, removeRemote, getDate } fro
 	if (await addRemote(remoteName, remoteUrl)) {
 		const updates = await getUpdates(`${remoteName}/master`);
 		if (updates.length) {
-			// console.log(chalk.default.yellow(`Nr of revisions to merge: ` + chalk.default.bold(updates.length.toString()))); 
-			
-/* 			const { selection } = await inquirer.prompt<{ selection: Commit[] }>({
-				choices: [
-					new inquirer.Separator(),
-					...updates.map(commit => ({
-						name: commit.message,
-						value: commit
-					}))
-				],
-				name: "selection",
-				type: "checkbox",
-				pageSize: 25
-			});
- */
 			const updateSet = updates.sort((commitA, commitB) => commitA.timestamp - commitB.timestamp);
-			console.log(chalk.default.bgCyan(`(from oldest to newest) List of revisions to merge (` + chalk.default.bold(updates.length.toString())+ `)`));
+			console.log(chalk.default.bgCyan(`List of revisions to merge (` + chalk.default.bold(updates.length.toString())+ `)`));
 			for (const update of updateSet) {
 				let d = getDate(update.timestamp);
-				console.log(chalk.default.magenta(d.toLocaleDateString() + " # " + update.message));
+				console.log(chalk.default.magenta("[" + d.toLocaleDateString() + "] " + update.hash + ": " + update.message));
 			}
 			
 			for (const update of updateSet) {
