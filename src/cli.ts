@@ -12,7 +12,7 @@ import { addRemote, applyUpdate, Commit, getUpdates, removeRemote, getDate, git 
 	}
 	await removeRemote(remoteName);
 	if (await addRemote(remoteName, remoteUrl)) {
-		console.log(`Unable to add remote repository with url: ${remoteUrl}`);
+		console.log(`Getting updates from remote: ${remoteUrl}`);
 		const updates = await getUpdates(`${remoteName}/release`);
 		// console.log(`updates:  ${updates}`);
 		if (updates.length) {
