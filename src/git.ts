@@ -68,7 +68,7 @@ export async function getCurrentBranchName() {
 }
 
 export function getDate(unixtime: number): Date {
-	return new Date(unixtime*1000);
+	return new Date(unixtime * 1000);
 }
 
 export async function getUpdates(updateBranch: string) {
@@ -79,12 +79,37 @@ export async function getUpdates(updateBranch: string) {
 	const templateHashes = (await git(`log ${updateBranch} --format=%h`)).trim().split("\n");
 	const templateMessages = (await git(`log ${updateBranch} --format=%s`)).trim().split("\n");
 	const templateDates = (await git(`log ${updateBranch} --format=%at`)).trim().split("\n");
-
+	if (DEBUG) console.log(`currentBranch: ${currentBranch}`);
 	const forkDate = +currentDates[currentDates.length - 1];
+	if (DEBUG) console.log(`forkDate: ${forkDate}`);
 	const afterFork = (commit: Commit) => commit.timestamp >= forkDate;
 	const notApplied = (commit: Commit) =>
 		currentMessages.findIndex(msg => msg.includes("🔄") && msg.includes(commit.hash)) === -1 &&
-		currentHashes.findIndex(hash => hash === commit.hash) === -1;
+		currentHashes.findIndex(hash => hash === commit.hash) === -1
+	// const notApplied = (commit: Commit) => {
+	// 	const notExist = currentMessages.findIndex(msg => msg.includes("🔄") && msg.includes(commit.hash)) === -1 &&
+	// 		currentHashes.findIndex(hash => hash === commit.hash) === -1;
+	// 	if (DEBUG) console.log(`notExist: ${notExist}`);
+	// 	const potentialRevert = currentMessages.findIndex(msg => msg.startsWith("Revert")) > -1;
+	// 	if (DEBUG) console.log(`potentailRevert: ${potentialRevert}`);
+	// 	let isRevert = false;
+	// 	if(potentialRevert) {
+	// 		const regularCommitIdx =  currentMessages.findIndex(msg => msg.includes("🔄") && msg.includes(commit.hash) && !msg.startsWith("Revert"))
+	// 		const revertIdx = currentMessages.findIndex(msg => msg.startsWith("Revert"));
+	// 		if (DEBUG) console.log(`hashIndex: ${regularCommitIdx}`);
+	// 		if (DEBUG) console.log(`revertIndex: ${revertIdx}`);
+	// 		const regularcommitDate = +currentDates[regularCommitIdx];
+	// 		const revertDate = +currentDates[revertIdx];
+	// 		if(revertDate > regularcommitDate) {
+	// 			isRevert = true;
+	// 		}
+
+	// 	}
+
+	// 	return (notExist || isRevert)
+	// };
+
+	if (DEBUG) console.log(`notApplied: ${notApplied}`);
 	const updates = templateHashes
 		.map((hash, idx) => ({ hash, message: templateMessages[idx], timestamp: +templateDates[idx] } as Commit))
 		.filter(notApplied)
@@ -107,10 +132,10 @@ export async function applyUpdate(commit: Commit, ignoreAllSpace: boolean) {
 	console.log(
 		chalk.default.cyanBright(`Applying update for template commit: ` + chalk.default.bold(commit.message)));
 
-	console.log(chalk.default.yellow`Stashing your current working directory before applying updates...`);
-	const stashed = !(await git(`stash save Before applying upstream-template update ${commit.hash}`, {
-		verbose: true
-	})).includes("No local changes");
+	// console.log(chalk.default.yellow`Stashing your current working directory before applying updates...`);
+	// const stashed = !(await git(`stash save Before applying upstream-template update ${commit.hash}`, {
+	// 	verbose: true
+	// })).includes("No local changes");
 
 	// If it's an update commit, don't attempt to merge with git, use package manager instead...
 	const update = extractUpdateCommit(commit);
@@ -119,15 +144,23 @@ export async function applyUpdate(commit: Commit, ignoreAllSpace: boolean) {
 		await successful(() => git(`add -u`, { verbose: true }));
 	} else {
 		const command = `cherry-pick ${!ignoreAllSpace ? `` : `-X ignore-all-space`} ${commit.hash} --no-commit`;
-		console.log(`${ignoreAllSpace?`(ignoring spaces)`:``}` + chalk.default.green` Running cherry-pick command: ` + command);
+		console.log(`${ignoreAllSpace ? `(ignoring spaces)` : ``}` + chalk.default.green` Running cherry-pick command: ` + command);
 		await successful(() => git(command));
 	}
 
 	async function successfullyCommits() {
 		try {
+			if (DEBUG) console.log('> going to commit')
 			await git(`commit -m "${commitMessage}"`, { verbose: true });
+			if (DEBUG) console.log('successfully commited!')
 			return true;
 		} catch (stderr) {
+			if (DEBUG) console.log(`Error committing:  ${stderr}`)
+			if (stderr.includes("working tree clean")) {
+				// the changes were already in the target getCurrentBranchName, so force a void commit
+				const voidCommitCmd = `commit --allow-empty -m "${commitMessage}" `;
+				await git(voidCommitCmd, { verbose: true });
+			}
 			return stderr.includes("working tree clean");
 		}
 	}
@@ -138,9 +171,9 @@ export async function applyUpdate(commit: Commit, ignoreAllSpace: boolean) {
 		});
 	}
 
-	if (stashed) {
-		await git(`stash pop`, { verbose: true });
-	}
+	// if (stashed) {
+	// 	await git(`stash pop`, { verbose: true });
+	// }
 }
 
 function generateUpdateCommitMessage(commit: Commit) {
