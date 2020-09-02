@@ -26,8 +26,10 @@ export function git(
 function run(inputCommand: string, { verbose }: { verbose?: boolean } = { verbose: false }): Promise<string> {
 	let output = "";
 	const [cmd, ...args] = (
-		inputCommand.match(/[A-z0-9\-\_\:\/\\\.\@\!\#\$\%\^\&\*\(\)\{\}\[\]\;\<\>\=\+\~]+|"[^\"]+"|'[^\']+'/g) || []
-	).map(arg => arg.replace(/\"/g, ""));
+		inputCommand.match(
+			/[A-z0-9\-\_\:\/\\\.\@\!\#\$\%\^\&\*\(\)\{\}\[\]\;\<\>\=\+\~]+|"(?:[^\"]|(?<=\\)")+"|'(?:[^\']|(?<=\\)')+'/g
+		) || []
+	).map(arg => arg.replace(/^"|"$|\\(?="|')/g, ""));
 	if (DEBUG) console.log(`» ${inputCommand}`, cmd, args);
 	const child = spawn(cmd, args, { stdio: ["inherit", "pipe", "pipe"] });
 
