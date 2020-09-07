@@ -3,18 +3,21 @@ import * as inquirer from 'inquirer';
 import * as chalk from 'chalk';
 
 import { addRemote, applyUpdate, Commit, getUpdates, removeRemote, getDate, git } from './git';
+import { rename } from 'fs';
 
-(async function main(remoteUrl?: string, ignoreAllSpace?: boolean): Promise<number> {
+(async function main(remoteUrl?: string, renameThreshold?: number, ignoreAllSpace?: boolean): Promise<number> {
 	const remoteName = "upstream-template";
 	if (!remoteUrl) {
 		console.error("Please provide an upstream-url");
 		return 1;
 	}
+	console.log('Version: 1')
+	console.log(`ignoreAllSpace: ${ignoreAllSpace}`);
+	console.log(`renameThreshold: ${renameThreshold}`);
 	await removeRemote(remoteName);
 	if (await addRemote(remoteName, remoteUrl)) {
 		console.log(`Getting updates from remote: ${remoteUrl}`);
 		const updates = await getUpdates(`${remoteName}/release`);
-		// console.log(`updates:  ${updates}`);
 		if (updates.length) {
 			const updateSet = updates.sort((commitA, commitB) => commitA.timestamp - commitB.timestamp);
 			console.log(chalk.default.bgCyan(`List of revisions to merge (` + chalk.default.bold(updates.length.toString()) + `)`));
@@ -27,7 +30,7 @@ import { addRemote, applyUpdate, Commit, getUpdates, removeRemote, getDate, git 
 				verbose: true
 			})).includes("No local changes");
 			for (const update of updateSet) {
-				await applyUpdate(update, !ignoreAllSpace ? false : true);
+				await applyUpdate(update, ignoreAllSpace ? ignoreAllSpace : false, renameThreshold ? renameThreshold : -1);
 			}
 			if (stashed) {
 				await git(`stash pop`, { verbose: true });

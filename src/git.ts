@@ -88,28 +88,6 @@ export async function getUpdates(updateBranch: string) {
 	const notApplied = (commit: Commit) =>
 		currentMessages.findIndex(msg => msg.includes("🔄") && msg.includes(commit.hash)) === -1 &&
 		currentHashes.findIndex(hash => hash === commit.hash) === -1
-	// const notApplied = (commit: Commit) => {
-	// 	const notExist = currentMessages.findIndex(msg => msg.includes("🔄") && msg.includes(commit.hash)) === -1 &&
-	// 		currentHashes.findIndex(hash => hash === commit.hash) === -1;
-	// 	if (DEBUG) console.log(`notExist: ${notExist}`);
-	// 	const potentialRevert = currentMessages.findIndex(msg => msg.startsWith("Revert")) > -1;
-	// 	if (DEBUG) console.log(`potentailRevert: ${potentialRevert}`);
-	// 	let isRevert = false;
-	// 	if(potentialRevert) {
-	// 		const regularCommitIdx =  currentMessages.findIndex(msg => msg.includes("🔄") && msg.includes(commit.hash) && !msg.startsWith("Revert"))
-	// 		const revertIdx = currentMessages.findIndex(msg => msg.startsWith("Revert"));
-	// 		if (DEBUG) console.log(`hashIndex: ${regularCommitIdx}`);
-	// 		if (DEBUG) console.log(`revertIndex: ${revertIdx}`);
-	// 		const regularcommitDate = +currentDates[regularCommitIdx];
-	// 		const revertDate = +currentDates[revertIdx];
-	// 		if(revertDate > regularcommitDate) {
-	// 			isRevert = true;
-	// 		}
-
-	// 	}
-
-	// 	return (notExist || isRevert)
-	// };
 
 	if (DEBUG) console.log(`notApplied: ${notApplied}`);
 	const updates = templateHashes
@@ -129,7 +107,7 @@ export async function successful(fn: () => any) {
 	}
 }
 
-export async function applyUpdate(commit: Commit, ignoreAllSpace: boolean) {
+export async function applyUpdate(commit: Commit, ignoreAllSpaces: boolean, renameThreshold: number) {
 	const commitMessage = generateUpdateCommitMessage(commit);
 	console.log(
 		chalk.default.cyanBright(`Applying update for template commit: ` + chalk.default.bold(commit.message)));
@@ -145,8 +123,8 @@ export async function applyUpdate(commit: Commit, ignoreAllSpace: boolean) {
 		await successful(() => run(`yarn upgrade ${update.package}@${update.version}`, { verbose: true }));
 		await successful(() => git(`add -u`, { verbose: true }));
 	} else {
-		const command = `cherry-pick ${!ignoreAllSpace ? `` : `-X ignore-all-space`} ${commit.hash} --no-commit`;
-		console.log(`${ignoreAllSpace ? `(ignoring spaces)` : ``}` + chalk.default.green` Running cherry-pick command: ` + command);
+		const command = `cherry-pick ${renameThreshold == -1 ? `` : `-X find-renames=${renameThreshold}%`} ${!ignoreAllSpaces ? `` : `-X ignore-all-space`} ${commit.hash} --no-commit`;
+		console.log(chalk.default.green` Running cherry-pick command: ` + command);
 		await successful(() => git(command));
 	}
 
