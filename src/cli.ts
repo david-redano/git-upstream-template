@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import * as inquirer from 'inquirer';
 import * as chalk from 'chalk';
+import * as pack from '../package.json';
 
 import { addRemote, applyUpdate, Commit, getUpdates, removeRemote, getDate, git } from './git';
 import { rename } from 'fs';
@@ -11,7 +11,8 @@ import { rename } from 'fs';
 		console.error("Please provide an upstream-url");
 		return 1;
 	}
-	console.log('Version: 1')
+	const version = pack.version;
+	console.log(`Version: ${version}`);
 	console.log(`ignoreAllSpace: ${ignoreAllSpace}`);
 	console.log(`renameThreshold: ${renameThreshold}`);
 	await removeRemote(remoteName);
