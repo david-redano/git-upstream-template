@@ -7,9 +7,7 @@
 		"sourceMap": true,
 		"outDir": "./dist",
 		"strict": true,
-		"module": "commonjs",
-		"resolveJsonModule": true,
-		"esModuleInterop": true
+		"module": "commonjs"
 	},
 	"exclude": ["node_modules", "dist"]
 }

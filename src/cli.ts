@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import * as chalk from 'chalk';
-import * as pack from '../package.json';
+// import * as pack from '../package.json';
 
 import { runUpdateRepo, addRemote, applyUpdate, getUpdates, removeRemote, getDate, git } from './git';
 import { rename } from 'fs';
@@ -11,8 +11,8 @@ import { rename } from 'fs';
 		console.error("Please provide an upstream-url");
 		return 1;
 	}
-	const version = pack.version;
-	console.log(chalk.default.whiteBright(`Version: ${version}`));
+	// const version = pack.version;
+	// console.log(chalk.default.whiteBright(`Version: ${version}`));
 	console.log(chalk.default.whiteBright(`ignoreAllSpace: ${ignoreAllSpace ? `${ignoreAllSpace} (user)` : `false (default)`}`));
 	console.log(chalk.default.whiteBright(`renameThreshold: ${renameThreshold ?`${renameThreshold}% (user)` : `50% (default)`}`));
 	await removeRemote(remoteName);
