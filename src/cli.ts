@@ -2,7 +2,7 @@
 import * as chalk from 'chalk';
 import * as pack from '../package.json';
 
-import { addRemote, applyUpdate, Commit, getUpdates, removeRemote, getDate, git } from './git';
+import { runUpdateRepo, addRemote, applyUpdate, getUpdates, removeRemote, getDate, git } from './git';
 import { rename } from 'fs';
 
 (async function main(remoteUrl?: string, renameThreshold?: number, ignoreAllSpace?: boolean): Promise<number> {
@@ -12,9 +12,9 @@ import { rename } from 'fs';
 		return 1;
 	}
 	const version = pack.version;
-	console.log(`Version: ${version}`);
-	console.log(`ignoreAllSpace: ${ignoreAllSpace}`);
-	console.log(`renameThreshold: ${renameThreshold}`);
+	console.log(chalk.default.whiteBright(`Version: ${version}`));
+	console.log(chalk.default.whiteBright(`ignoreAllSpace: ${ignoreAllSpace ? `${ignoreAllSpace} (user)` : `false (default)`}`));
+	console.log(chalk.default.whiteBright(`renameThreshold: ${renameThreshold ?`${renameThreshold}% (user)` : `50% (default)`}`));
 	await removeRemote(remoteName);
 	if (await addRemote(remoteName, remoteUrl)) {
 		console.log(`Getting updates from remote: ${remoteUrl}`);
@@ -36,7 +36,8 @@ import { rename } from 'fs';
 			if (stashed) {
 				await git(`stash pop`, { verbose: true });
 			}
-			console.log(`### Template Update Process finished ###`);
+			console.log(`### Synchronizing changes from Template Process finished ###`);
+			await runUpdateRepo();
 		} else {
 			console.log(`There are no new updates from upstream template repository`);
 		}

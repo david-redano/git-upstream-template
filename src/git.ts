@@ -1,6 +1,9 @@
 import * as chalk from 'chalk';
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import * as inquirer from 'inquirer';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as process from 'process';
 
 const DEBUG = false;
 
@@ -170,4 +173,42 @@ function extractUpdateCommit(commit: Commit): Update | false {
 	} else {
 		return false;
 	}
+}
+
+export async function runUpdateRepo() {
+	let domainId = '', serviceId = '';
+
+	const getFirstDir = (dir: string, regex: RegExp) => {
+		const files = fs.readdirSync(dir);
+		// console.log(`Dirs to process: ${files}`)
+		for (let i = 0; i < files.length; i++) {
+			let file = path.join(dir, files[i]);
+			if (fs.statSync(file).isDirectory()) {
+				// console.log(`file is dir: ${file}`);
+				const groups = regex.exec(file);
+				// console.log(`groups: ${groups}`);
+				if (groups) {
+					// console.log(`groups: ${groups}`);
+					domainId = groups ? groups[1] : '';
+					serviceId = groups ? groups[2] : '';
+					// console.log(`adding file to result: `, file);
+					// reset regexp expression
+					regex.lastIndex = 0;
+					break;
+				}
+
+			}
+		}
+	}
+
+	const match = RegExp("SBC\.([^\.]+)\.([^\.]+)\.(.*)", 'g');
+
+	const dir = "./src";
+	getFirstDir(dir, match);
+	console.log(`domaindId: ${domainId}`);
+	console.log(`serviceId: ${serviceId}`);
+
+	const cmd = `sh update_repo.sh --stage repo-update --domainId ${domainId} --serviceId ${serviceId}`;
+	console.log(chalk.default.cyanBright(`Executing update repo task with command: ${cmd}`));
+	const updaterepo = execSync(cmd, { stdio: 'inherit' });
 }
