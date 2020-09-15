@@ -207,8 +207,13 @@ export async function runUpdateRepo() {
 	getFirstDir(dir, match);
 	console.log(`domaindId: ${domainId}`);
 	console.log(`serviceId: ${serviceId}`);
-
-	const cmd = `sh update_repo.sh --stage repo-update --domainId ${domainId} --serviceId ${serviceId}`;
-	console.log(chalk.default.cyanBright(`Executing update repo task with command: ${cmd}`));
-	const updaterepo = execSync(cmd, { stdio: 'inherit' });
+	if(fs.existsSync("update_repo.sh")) {
+		// update_repo.sh exists, so go for variables replacement
+		const cmd = `sh update_repo.sh --stage repo-update --domainId ${domainId} --serviceId ${serviceId}`;
+		console.log(chalk.default.cyanBright(`Executing update repo task with command: ${cmd}`));
+		const updaterepo = execSync(cmd, { stdio: 'inherit' });	
+	} else {
+		console.log(chalk.default.cyanBright(`>> update_repo.sh does not exist. Variable replacement process not executed.`));
+	}
+    console.log(chalk.default.cyanBright(`### Update Base Template process finished ###`));
 }
